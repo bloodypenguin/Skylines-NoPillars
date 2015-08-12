@@ -130,6 +130,10 @@ namespace NoPillars
 
         private static void AddPrefabsToResult(ref NetInfo[] prefabs, ref HashSet<NetInfo> result)
         {
+            if (prefabs == null)
+            {
+                return;
+            }
             foreach (NetInfo prefab in prefabs)
             {
                 if (result.Contains(prefab))
