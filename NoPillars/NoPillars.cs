@@ -16,7 +16,8 @@ namespace NoPillars
     {
         public static UIButton b_pillars;
         public static UIButton b_collide;
-        public static UIButton b_strack;
+        public static UIButton b_tstrack;
+        public static UIButton b_mstrack;
 
         public class SaveInfo
         {
@@ -41,21 +42,35 @@ namespace NoPillars
 
             var uiView = UIView.GetAView();
 
-            float aeo = 0f;
+            var aeo = 0f;
             if (mode == LoadMode.LoadAsset || mode == LoadMode.NewAsset)
             {
                 aeo = 0.2f;
 
-                b_strack = makeButton(uiView, "Station Track");
-                b_strack.transformPosition = new Vector3(-1.25f + aeo, -0.82f);
-                b_strack.eventClick += setStationTrack;
+                b_tstrack = makeButton(uiView, "Train S.Track");
+                b_tstrack.tooltip = "Build train station track";
+                b_tstrack.transformPosition = new Vector3(-1.25f + aeo, -0.82f);
+                b_tstrack.eventClick += (component, eventParam) =>
+                {
+                    switchToRoadByName("Train Station Track");
+                };
+
+                b_mstrack = makeButton(uiView, "Metro S.Track");
+                b_tstrack.tooltip = "Build metro station track";
+                b_mstrack.transformPosition = new Vector3(-1.25f + aeo, -0.88f);
+                b_mstrack.eventClick += (component, eventParam) =>
+                {
+                    switchToRoadByName("Metro Station Track");
+                };
             }
 
             b_pillars = makeButton(uiView, "Pillars");
+            b_pillars.tooltip = "Change pillars mode";
             b_pillars.transformPosition = new Vector3(-1.45f + aeo, -0.82f);
             b_pillars.eventClick += togglePillars;
 
             b_collide = makeButton(uiView, "Collide");
+            b_collide.tooltip = "Change collision mode";
             b_collide.transformPosition = new Vector3(-1.45f + aeo, -0.88f);
             b_collide.eventClick += toggleColliding;
         }
@@ -142,11 +157,6 @@ namespace NoPillars
                 result.Add(prefab);
             }
 
-        }
-
-        private void setStationTrack(UIComponent component, UIMouseEventParameter eventParam)
-        {
-            switchToRoadByName("Train Station Track");
         }
 
         private void modify()
