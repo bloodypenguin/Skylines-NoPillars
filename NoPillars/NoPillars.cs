@@ -1,8 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
+using ColossalFramework.UI;
 using ICities;
 using UnityEngine;
-using ColossalFramework.UI;
 
 namespace NoPillars
 {
@@ -14,9 +14,9 @@ namespace NoPillars
 
     public class NoPillarsLoadingExtension : LoadingExtensionBase
     {
-        public static UIButton b_pillars = null;
-        public static UIButton b_collide = null;
-        public static UIButton b_strack = null;
+        public static UIButton b_pillars;
+        public static UIButton b_collide;
+        public static UIButton b_strack;
 
         public class SaveInfo
         {
@@ -27,10 +27,10 @@ namespace NoPillars
             public BuildingInfo bpi;
             public BuildingInfo bmi;
         }
-        public static FastList<SaveInfo> saveList = null;
-        public static SaveInfo track = null;
+        public static FastList<SaveInfo> saveList;
+        public static SaveInfo track;
 
-        public static int pillars = 0;
+        public static int pillars;
         public static bool collide = true;
 
         public override void OnLevelLoaded(LoadMode mode)
@@ -89,24 +89,22 @@ namespace NoPillars
 
         private void switchToRoadByName(string name)
         {
-            NetTool nt = ToolsModifierControl.SetTool<NetTool>();
-            if (nt != null)
+            var nt = ToolsModifierControl.SetTool<NetTool>();
+            if (nt == null)
             {
-                foreach (NetInfo prefab in getPrefabs())
-                {
-                    if (prefab.name == name)
-                    {
-                        nt.m_prefab = prefab;
-                        return;
-                    }
-                }
+                return;
+            }
+            foreach (var prefab in getPrefabs().Where(prefab => prefab.name == name))
+            {
+                nt.m_prefab = prefab;
+                return;
             }
         }
 
-        private static HashSet<NetInfo> getPrefabs()
+        private static IEnumerable<NetInfo> getPrefabs()
         {
             var result = new HashSet<NetInfo>();
-            foreach (var collection in NetCollection.FindObjectsOfType<NetCollection>())
+            foreach (var collection in Object.FindObjectsOfType<NetCollection>())
             {
                 AddPrefabsToResult(ref collection.m_prefabs, ref result);
             }
@@ -121,11 +119,12 @@ namespace NoPillars
         private static void AddPrefabsFromGameObject(string gameObjectName, ref HashSet<NetInfo> result)
         {
             var gameObject = GameObject.Find(gameObjectName);
-            if (gameObject != null)
+            if (gameObject == null)
             {
-                var prefabs = gameObject.GetComponentsInChildren<NetInfo>(true);
-                AddPrefabsToResult(ref prefabs, ref result);
+                return;
             }
+            var prefabs = gameObject.GetComponentsInChildren<NetInfo>(true);
+            AddPrefabsToResult(ref prefabs, ref result);
         }
 
         private static void AddPrefabsToResult(ref NetInfo[] prefabs, ref HashSet<NetInfo> result)
@@ -134,9 +133,9 @@ namespace NoPillars
             {
                 return;
             }
-            foreach (NetInfo prefab in prefabs)
+            foreach (var prefab in prefabs)
             {
-                if (result.Contains(prefab))
+                if (prefab == null || result.Contains(prefab))
                 {
                     continue;
                 }
@@ -158,11 +157,9 @@ namespace NoPillars
             }
             saveList = new FastList<SaveInfo>();
 
-            var processedAi = new HashSet<NetAI>();
-
-            foreach (NetInfo prefab in getPrefabs())
+            foreach (var prefab in getPrefabs())
             {
-                SaveInfo si = new SaveInfo();
+                var si = new SaveInfo();
 
                 if (prefab.name == "Train Track Elevated")
                 {
@@ -174,7 +171,7 @@ namespace NoPillars
                 prefab.m_canCollide = collide && prefab.m_canCollide;
 
                 var mNetAi = prefab.m_netAI;
-                TrainTrackBridgeAI ta = mNetAi as TrainTrackBridgeAI;
+                var ta = mNetAi as TrainTrackBridgeAI;
                 if (ta != null)
                 {
                     si.bpi = ta.m_bridgePillarInfo;
@@ -190,7 +187,7 @@ namespace NoPillars
                         ta.m_middlePillarInfo = track.bmi;
                     }
                 }
-                RoadBridgeAI ra = mNetAi as RoadBridgeAI;
+                var ra = mNetAi as RoadBridgeAI;
                 if (ra != null)
                 {
                     si.bpi = ra.m_bridgePillarInfo;
@@ -206,7 +203,7 @@ namespace NoPillars
                         ra.m_middlePillarInfo = track.bmi;
                     }
                 }
-                PedestrianBridgeAI pa = mNetAi as PedestrianBridgeAI;
+                var pa = mNetAi as PedestrianBridgeAI;
                 if (pa != null)
                 {
                     si.bpi = pa.m_bridgePillarInfo;
@@ -215,7 +212,7 @@ namespace NoPillars
                         pa.m_bridgePillarInfo = null;
                     }
                 }
-                RoadAI r2 = mNetAi as RoadAI;
+                var r2 = mNetAi as RoadAI;
                 if (r2 != null)
                 {
                     si.zoning = r2.m_enableZoning;
@@ -231,27 +228,27 @@ namespace NoPillars
             {
                 return;
             }
-            foreach (SaveInfo si in saveList)
+            foreach (var si in saveList)
             {
                 si.prefab.m_canCollide = si.collide;
-                TrainTrackBridgeAI ta = si.prefab.m_netAI as TrainTrackBridgeAI;
+                var ta = si.prefab.m_netAI as TrainTrackBridgeAI;
                 if (ta != null)
                 {
                     ta.m_bridgePillarInfo = si.bpi;
                     ta.m_middlePillarInfo = si.bmi;
                 }
-                RoadBridgeAI ra = si.prefab.m_netAI as RoadBridgeAI;
+                var ra = si.prefab.m_netAI as RoadBridgeAI;
                 if (ra != null)
                 {
                     ra.m_bridgePillarInfo = si.bpi;
                     ra.m_middlePillarInfo = si.bmi;
                 }
-                PedestrianBridgeAI pa = si.prefab.m_netAI as PedestrianBridgeAI;
+                var pa = si.prefab.m_netAI as PedestrianBridgeAI;
                 if (pa != null)
                 {
                     pa.m_bridgePillarInfo = si.bpi;
                 }
-                RoadAI r2 = si.prefab.m_netAI as RoadAI;
+                var r2 = si.prefab.m_netAI as RoadAI;
                 if (r2 != null)
                 {
                     r2.m_enableZoning = si.zoning;
@@ -265,17 +262,17 @@ namespace NoPillars
         {
             pillars = (pillars + 1) % 3;
             modify();
-            if (pillars == 0)
+            switch (pillars)
             {
-                b_pillars.text = "Pillars";
-            }
-            else if (pillars == 1)
-            {
-                b_pillars.text = "Floating";
-            }
-            else if (pillars == 2)
-            {
-                b_pillars.text = "Pillars (Side)";
+                case 0:
+                    b_pillars.text = "Pillars";
+                    break;
+                case 1:
+                    b_pillars.text = "Floating";
+                    break;
+                case 2:
+                    b_pillars.text = "Pillars (Side)";
+                    break;
             }
         }
 
@@ -283,14 +280,7 @@ namespace NoPillars
         {
             collide = !collide;
             modify();
-            if (collide)
-            {
-                b_collide.text = "Collide";
-            }
-            else
-            {
-                b_collide.text = "Overlap";
-            }
+            b_collide.text = collide ? "Collide" : "Overlap";
         }
     }
 }
