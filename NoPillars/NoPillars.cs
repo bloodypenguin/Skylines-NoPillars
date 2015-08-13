@@ -32,12 +32,12 @@ namespace NoPillars
         public static SaveInfo track;
 
         public static int pillars;
-        public static bool collide = true;
+        public static int collide;
 
         public override void OnLevelLoaded(LoadMode mode)
         {
             pillars = 0;
-            collide = true;
+            collide = 0;
             saveList = null;
 
             var uiView = UIView.GetAView();
@@ -79,7 +79,7 @@ namespace NoPillars
         {
             revert();
             pillars = 0;
-            collide = true;
+            collide = 0;
         }
 
         private UIButton makeButton(UIView uiView, string t)
@@ -178,7 +178,7 @@ namespace NoPillars
 
                 si.prefab = prefab;
                 si.collide = prefab.m_canCollide;
-                prefab.m_canCollide = collide && prefab.m_canCollide;
+                prefab.m_canCollide = (collide != 1) && prefab.m_canCollide;
 
                 var mNetAi = prefab.m_netAI;
                 var ta = mNetAi as TrainTrackBridgeAI;
@@ -226,7 +226,16 @@ namespace NoPillars
                 if (r2 != null)
                 {
                     si.zoning = r2.m_enableZoning;
-                    if (!collide) r2.m_enableZoning = false;
+                    switch (collide)
+                    {
+                        case 1:
+                        case 2:
+                            r2.m_enableZoning = false;
+                            break;
+                        case 3:
+                            r2.m_enableZoning = true;
+                            break;
+                    }
                 }
                 saveList.Add(si);
             }
@@ -288,9 +297,24 @@ namespace NoPillars
 
         private void toggleColliding(UIComponent component, UIMouseEventParameter eventParam)
         {
-            collide = !collide;
+            collide = (collide + 1) % 4;
             modify();
-            b_collide.text = collide ? "Collide" : "Overlap";
+            switch (collide)
+            {
+                case 0:
+                    b_collide.text = "Collide";
+                    break;
+                case 1:
+                    b_collide.text = "Overlap";
+                    break;
+                case 2:
+                    b_collide.text = "No Zoning";
+                    break;
+                case 3:
+                    b_collide.text = "Force Zoning";
+                    break;
+
+            }
         }
     }
 }
