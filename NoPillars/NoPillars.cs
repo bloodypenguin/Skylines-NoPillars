@@ -99,6 +99,7 @@ namespace NoPillars
             b.focusedTextColor = new Color32(255, 255, 255, 255);
             b.pressedTextColor = new Color32(30, 30, 44, 255);
             b.playAudioEvents = true;
+            b.isTooltipLocalized = false;
             return b;
         }
 
