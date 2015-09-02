@@ -16,6 +16,7 @@ namespace NoPillars
     {
         public static UIButton b_pillars;
         public static UIButton b_collide;
+        public static UIButton b_trafficLights;
 
         public class SaveInfo
         {
@@ -23,6 +24,7 @@ namespace NoPillars
 
             public bool collide;
             public bool zoning;
+            public bool trafficLights;
             public BuildingInfo bpi;
             public BuildingInfo bmi;
         }
@@ -31,11 +33,13 @@ namespace NoPillars
 
         public static int pillars;
         public static int collide;
+        public static int trafficLights;
 
         public override void OnLevelLoaded(LoadMode mode)
         {
             pillars = 0;
             collide = 0;
+            trafficLights = 0;
             saveList = null;
 
             var uiView = UIView.GetAView();
@@ -49,6 +53,11 @@ namespace NoPillars
             b_collide.tooltip = "Change collision mode";
             b_collide.transformPosition = new Vector3(-1.45f, -0.88f);
             b_collide.eventClick += toggleColliding;
+
+//            b_trafficLights = makeButton(uiView, "Traffic Lights");
+//            b_trafficLights.tooltip = "Change traffic lights mode";
+//            b_trafficLights.transformPosition = new Vector3(-1.25f, -0.82f);
+//            b_trafficLights.eventClick += toggleTrafficLights;
         }
 
         public override void OnLevelUnloading()
@@ -56,6 +65,7 @@ namespace NoPillars
             revert();
             pillars = 0;
             collide = 0;
+            trafficLights = 0;
         }
 
         private UIButton makeButton(UIView uiView, string t)
@@ -191,6 +201,8 @@ namespace NoPillars
                     si.zoning = r2.m_enableZoning;
                     switch (collide)
                     {
+                        case 0:
+                            break;
                         case 1:
                         case 2:
                             r2.m_enableZoning = false;
@@ -199,6 +211,19 @@ namespace NoPillars
                             r2.m_enableZoning = true;
                             break;
                     }
+                    si.trafficLights = r2.m_trafficLights;
+                    switch (trafficLights)
+                    {
+                        case 0:
+                            break;
+                        case 1:
+                            r2.m_trafficLights = false;
+                            break;
+                        case 2:
+                            r2.m_trafficLights = true;
+                            break;    
+                    }
+
                 }
                 saveList.Add(si);
             }
@@ -234,6 +259,7 @@ namespace NoPillars
                 if (r2 != null)
                 {
                     r2.m_enableZoning = si.zoning;
+                    r2.m_trafficLights = si.trafficLights;
                 }
 
             }
@@ -275,6 +301,25 @@ namespace NoPillars
                     break;
                 case 3:
                     b_collide.text = "Force Zoning";
+                    break;
+
+            }
+        }
+
+        private void toggleTrafficLights(UIComponent component, UIMouseEventParameter eventParam)
+        {
+            trafficLights = (trafficLights + 1) % 3;
+            modify();
+            switch (trafficLights)
+            {
+                case 0:
+                    b_trafficLights.text = "Traffic Lights";
+                    break;
+                case 1:
+                    b_trafficLights.text = "No Traffic Lights";
+                    break;
+                case 2:
+                    b_trafficLights.text = "Force Traffic Lights";
                     break;
 
             }
