@@ -9,15 +9,13 @@ namespace NoPillars
     public class NoPillarsMod : IUserMod
     {
         public string Name { get { return "No Pillars"; } }
-        public string Description { get { return "Toggle pillars and collision, and use railroad tracks in the asset editor"; } }
+        public string Description { get { return "Toggle pillars, collision and zoning"; } }
     }
 
     public class NoPillarsLoadingExtension : LoadingExtensionBase
     {
         public static UIButton b_pillars;
         public static UIButton b_collide;
-        public static UIButton b_tstrack;
-        public static UIButton b_mstrack;
 
         public class SaveInfo
         {
@@ -42,36 +40,14 @@ namespace NoPillars
 
             var uiView = UIView.GetAView();
 
-            var aeo = 0f;
-            if (mode == LoadMode.LoadAsset || mode == LoadMode.NewAsset)
-            {
-                aeo = 0.2f;
-
-                b_tstrack = makeButton(uiView, "Train S.Track");
-                b_tstrack.tooltip = "Build train station track";
-                b_tstrack.transformPosition = new Vector3(-1.25f + aeo, -0.82f);
-                b_tstrack.eventClick += (component, eventParam) =>
-                {
-                    switchToRoadByName("Train Station Track");
-                };
-
-                b_mstrack = makeButton(uiView, "Metro S.Track");
-                b_tstrack.tooltip = "Build metro station track";
-                b_mstrack.transformPosition = new Vector3(-1.25f + aeo, -0.88f);
-                b_mstrack.eventClick += (component, eventParam) =>
-                {
-                    switchToRoadByName("Metro Station Track");
-                };
-            }
-
             b_pillars = makeButton(uiView, "Pillars");
             b_pillars.tooltip = "Change pillars mode";
-            b_pillars.transformPosition = new Vector3(-1.45f + aeo, -0.82f);
+            b_pillars.transformPosition = new Vector3(-1.45f, -0.82f);
             b_pillars.eventClick += togglePillars;
 
             b_collide = makeButton(uiView, "Collide");
             b_collide.tooltip = "Change collision mode";
-            b_collide.transformPosition = new Vector3(-1.45f + aeo, -0.88f);
+            b_collide.transformPosition = new Vector3(-1.45f, -0.88f);
             b_collide.eventClick += toggleColliding;
         }
 
@@ -101,20 +77,6 @@ namespace NoPillars
             b.playAudioEvents = true;
             b.isTooltipLocalized = false;
             return b;
-        }
-
-        private void switchToRoadByName(string name)
-        {
-            var nt = ToolsModifierControl.SetTool<NetTool>();
-            if (nt == null)
-            {
-                return;
-            }
-            foreach (var prefab in getPrefabs().Where(prefab => prefab.name == name))
-            {
-                nt.m_prefab = prefab;
-                return;
-            }
         }
 
         private static IEnumerable<NetInfo> getPrefabs()
