@@ -29,7 +29,7 @@ namespace NoPillars
             public BuildingInfo bmi;
         }
         public static FastList<SaveInfo> saveList;
-        public static SaveInfo track;
+        public static TrainTrackBridgeAI track;
 
         public static int pillars;
         public static int collide;
@@ -89,7 +89,7 @@ namespace NoPillars
             return b;
         }
 
-        private static IEnumerable<NetInfo> getPrefabs()
+        private static HashSet<NetInfo> GetPrefabs()
         {
             var result = new HashSet<NetInfo>();
             foreach (var collection in Object.FindObjectsOfType<NetCollection>())
@@ -140,25 +140,29 @@ namespace NoPillars
             }
             saveList = new FastList<SaveInfo>();
 
-            foreach (var prefab in getPrefabs())
+            var prefabs = GetPrefabs();
+            if (track == null)
             {
-                var si = new SaveInfo();
-
-                if (prefab.name == "Train Track Elevated")
+                foreach (var prefab in prefabs.Where(prefab => prefab.m_netAI is TrainTrackBridgeAI && prefab.name == "Train Track Elevated"))
                 {
-                    track = si;
-                }
-
-                si.prefab = prefab;
-                si.collide = prefab.m_canCollide;
+                    track = (TrainTrackBridgeAI)prefab.m_netAI;
+                } 
+            }
+            var modifiedAi = new List<NetAI>();
+            foreach (var prefab in prefabs)
+            {
+                saveList.Add(GetSave(prefab));
                 prefab.m_canCollide = (collide != 1) && prefab.m_canCollide;
-
                 var mNetAi = prefab.m_netAI;
+                if (prefab.m_netAI == null || modifiedAi.Contains(mNetAi))
+                {
+                    continue;
+                }
+                modifiedAi.Add(mNetAi);
+
                 var ta = mNetAi as TrainTrackBridgeAI;
                 if (ta != null)
                 {
-                    si.bpi = ta.m_bridgePillarInfo;
-                    si.bmi = ta.m_middlePillarInfo;
                     if (pillars == 1)
                     {
                         ta.m_bridgePillarInfo = null;
@@ -166,15 +170,13 @@ namespace NoPillars
                     }
                     else if (pillars == 2 && track != null)
                     {
-                        ta.m_bridgePillarInfo = track.bpi;
-                        ta.m_middlePillarInfo = track.bmi;
+                        ta.m_bridgePillarInfo = track.m_bridgePillarInfo;
+                        ta.m_middlePillarInfo = track.m_middlePillarInfo;
                     }
                 }
                 var ra = mNetAi as RoadBridgeAI;
                 if (ra != null)
                 {
-                    si.bpi = ra.m_bridgePillarInfo;
-                    si.bmi = ra.m_middlePillarInfo;
                     if (pillars == 1)
                     {
                         ra.m_bridgePillarInfo = null;
@@ -182,14 +184,13 @@ namespace NoPillars
                     }
                     else if (pillars == 2 && track != null)
                     {
-                        ra.m_bridgePillarInfo = track.bpi;
-                        ra.m_middlePillarInfo = track.bmi;
+                        ra.m_bridgePillarInfo = track.m_bridgePillarInfo;
+                        ra.m_middlePillarInfo = track.m_middlePillarInfo;
                     }
                 }
                 var pa = mNetAi as PedestrianBridgeAI;
                 if (pa != null)
                 {
-                    si.bpi = pa.m_bridgePillarInfo;
                     if (pillars != 0)
                     {
                         pa.m_bridgePillarInfo = null;
@@ -198,7 +199,6 @@ namespace NoPillars
                 var r2 = mNetAi as RoadAI;
                 if (r2 != null)
                 {
-                    si.zoning = r2.m_enableZoning;
                     switch (collide)
                     {
                         case 0:
@@ -211,7 +211,6 @@ namespace NoPillars
                             r2.m_enableZoning = true;
                             break;
                     }
-//                    si.trafficLights = r2.m_trafficLights;
 //                    switch (trafficLights)
 //                    {
 //                        case 0:
@@ -225,8 +224,40 @@ namespace NoPillars
 //                    }
 
                 }
-                saveList.Add(si);
+
             }
+        }
+
+        private static SaveInfo GetSave(NetInfo prefab)
+        {
+            var mNetAi = prefab.m_netAI;
+            var si = new SaveInfo();
+            si.prefab = prefab;
+            si.collide = prefab.m_canCollide;
+            var ta = mNetAi as TrainTrackBridgeAI;
+            if (ta != null)
+            {
+                si.bpi = ta.m_bridgePillarInfo;
+                si.bmi = ta.m_middlePillarInfo;
+            }
+            var ra = mNetAi as RoadBridgeAI;
+            if (ra != null)
+            {
+                si.bpi = ra.m_bridgePillarInfo;
+                si.bmi = ra.m_middlePillarInfo;
+            }
+            var pa = mNetAi as PedestrianBridgeAI;
+            if (pa != null)
+            {
+                si.bpi = pa.m_bridgePillarInfo;
+            }
+            var r2 = mNetAi as RoadAI;
+            if (r2 != null)
+            {
+                si.zoning = r2.m_enableZoning;
+//                    si.trafficLights = r2.m_trafficLights;
+            }
+            return si;
         }
 
         private void revert()
