@@ -41,6 +41,7 @@ namespace NoPillars
             collide = 0;
             //trafficLights = 0;
             saveList = null;
+            track = null;
 
             var uiView = UIView.GetAView();
 
@@ -66,6 +67,8 @@ namespace NoPillars
             pillars = 0;
             collide = 0;
             //trafficLights = 0;
+            saveList = null;
+            track = null;
         }
 
         private UIButton makeButton(UIView uiView, string t)
