@@ -16,7 +16,6 @@ namespace NoPillars
     {
         public static UIButton b_pillars;
         public static UIButton b_collide;
-        //public static UIButton b_trafficLights;
 
         public class SaveInfo
         {
@@ -24,7 +23,6 @@ namespace NoPillars
 
             public bool collide;
             public bool zoning;
-            //public bool trafficLights;
             public BuildingInfo bpi;
             public BuildingInfo bmi;
         }
@@ -33,13 +31,11 @@ namespace NoPillars
 
         public static int pillars;
         public static int collide;
-        //public static int trafficLights;
 
         public override void OnLevelLoaded(LoadMode mode)
         {
             pillars = 0;
             collide = 0;
-            //trafficLights = 0;
             saveList = null;
             track = null;
 
@@ -47,18 +43,13 @@ namespace NoPillars
 
             b_pillars = makeButton(uiView, "Pillars");
             b_pillars.tooltip = "Change pillars mode";
-            b_pillars.transformPosition = new Vector3(-1.45f, -0.82f);
+            b_pillars.relativePosition = new Vector2(200, 985);
             b_pillars.eventClick += togglePillars;
 
             b_collide = makeButton(uiView, "Collide");
             b_collide.tooltip = "Change collision mode";
-            b_collide.transformPosition = new Vector3(-1.45f, -0.88f);
+            b_collide.relativePosition = new Vector2(200, 1015);
             b_collide.eventClick += toggleColliding;
-
-//            b_trafficLights = makeButton(uiView, "Traffic Lights");
-//            b_trafficLights.tooltip = "Change traffic lights mode";
-//            b_trafficLights.transformPosition = new Vector3(-1.25f, -0.82f);
-//            b_trafficLights.eventClick += toggleTrafficLights;
         }
 
         public override void OnLevelUnloading()
@@ -66,7 +57,6 @@ namespace NoPillars
             revert();
             pillars = 0;
             collide = 0;
-            //trafficLights = 0;
             saveList = null;
             track = null;
         }
@@ -95,15 +85,10 @@ namespace NoPillars
         private static HashSet<NetInfo> GetPrefabs()
         {
             var result = new HashSet<NetInfo>();
-            foreach (var collection in Object.FindObjectsOfType<NetCollection>())
+            foreach (var prefab in Resources.FindObjectsOfTypeAll<NetInfo>())
             {
-                AddPrefabsToResult(ref collection.m_prefabs, ref result);
+                result.Add(prefab);
             }
-
-            AddPrefabsFromGameObject("German Roads Prefabs", ref result);
-            AddPrefabsFromGameObject("CSL-Traffic Custom Prefabs", ref result);
-            AddPrefabsFromGameObject("Some Roads Prefabs", ref result);
-
             return result;
         }
 
@@ -151,7 +136,7 @@ namespace NoPillars
                     track = (TrainTrackBridgeAI)prefab.m_netAI;
                 } 
             }
-            var modifiedAi = new List<NetAI>();
+            var modifiedAi = new HashSet<NetAI>();
             foreach (var prefab in prefabs)
             {
                 saveList.Add(GetSave(prefab));
@@ -214,18 +199,6 @@ namespace NoPillars
                             r2.m_enableZoning = true;
                             break;
                     }
-//                    switch (trafficLights)
-//                    {
-//                        case 0:
-//                            break;
-//                        case 1:
-//                            r2.m_trafficLights = false;
-//                            break;
-//                        case 2:
-//                            r2.m_trafficLights = true;
-//                            break;    
-//                    }
-
                 }
 
             }
@@ -258,7 +231,6 @@ namespace NoPillars
             if (r2 != null)
             {
                 si.zoning = r2.m_enableZoning;
-//                    si.trafficLights = r2.m_trafficLights;
             }
             return si;
         }
@@ -293,7 +265,6 @@ namespace NoPillars
                 if (r2 != null)
                 {
                     r2.m_enableZoning = si.zoning;
-//                    r2.m_trafficLights = si.trafficLights;
                 }
 
             }
@@ -339,24 +310,5 @@ namespace NoPillars
 
             }
         }
-
-//        private void toggleTrafficLights(UIComponent component, UIMouseEventParameter eventParam)
-//        {
-//            trafficLights = (trafficLights + 1) % 3;
-//            modify();
-//            switch (trafficLights)
-//            {
-//                case 0:
-//                    b_trafficLights.text = "Traffic Lights";
-//                    break;
-//                case 1:
-//                    b_trafficLights.text = "No Traffic Lights";
-//                    break;
-//                case 2:
-//                    b_trafficLights.text = "Force Traffic Lights";
-//                    break;
-//
-//            }
-//        }
     }
 }
