@@ -9,7 +9,6 @@ namespace NoPillars
         {
             base.OnLevelLoaded(mode);
             Pillars.Initialize();
-            NetInfoExtensions.Initialize();
             NoPillarsUI.Initialize();
             NoPillarsMonitor.Initialize();
         }
@@ -18,7 +17,6 @@ namespace NoPillars
         {
             base.OnLevelUnloading();
             NoPillarsUI.Dispose();
-            NetInfoExtensions.Reset();
             NoPillarsMonitor.Dispose();
         }
     }

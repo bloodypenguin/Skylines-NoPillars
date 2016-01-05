@@ -13,8 +13,6 @@ namespace NoPillars
         private static UIDropDown _collideDropDown;
         private static UIPanel _panel;
 
-        public static int Mode { get; private set; } = (int)ModificationMode.None;
-
         public static int Pillars { get; private set; } = 0;
 
         public static int Collide { get; private set; } = 0;
@@ -90,7 +88,6 @@ namespace NoPillars
             {
                 _pillarsDropDown.selectedIndex = 0;
             }
-            Mode = (int)ModificationMode.AllPrefabs;
             Pillars = 0;
             Collide = 0;
         }

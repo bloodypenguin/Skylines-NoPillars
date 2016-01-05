@@ -15,11 +15,10 @@ namespace NoPillars
         private List<NetInfoExtensions.Metadata> savedMetadata;
         private int currentPillars = -1;
         private int currentCollide = -1;
-        private int currentMode = -1;
+        private bool currentAlwaysVisible;
 
         public static void Initialize()
         {
-
             var gameObject = new GameObject(GameObjectName);
             var monitor = gameObject.AddComponent<NoPillarsMonitor>();
             if (!Util.IsModActive("Fine Road Heights"))
@@ -44,25 +43,35 @@ namespace NoPillars
             }
         }
 
+
+        public void Awake()
+        {
+            currentAlwaysVisible = Options.OptionsHolder.Options.alwaysVisible;
+        }
+
         public void Update()
         {
             var prefab = GetToolPrefab();
-            if (prefab == null)
+            var alwaysVisible = Options.OptionsHolder.Options.alwaysVisible;
+            if (prefab == null && !alwaysVisible)
             {
                 NoPillarsUI.Hide();
-                if (currentPrefab == null)
+                if (currentPrefab == null && currentAlwaysVisible == alwaysVisible)
                 {
                     return;
                 }
                 Reset();
-                NoPillarsUI.Reset();
+                if (Options.OptionsHolder.Options.resetOnHide) { 
+                    NoPillarsUI.Reset();
+                }
+                currentAlwaysVisible = alwaysVisible;
             }
             else {
+                currentAlwaysVisible = alwaysVisible;
                 NoPillarsUI.Show();
                 var collide = NoPillarsUI.Collide;
                 var pillars = NoPillarsUI.Pillars;
-                var mode = NoPillarsUI.Mode;
-                if (currentCollide == collide && currentPillars == pillars && currentMode == mode && (mode == (int)ModificationMode.AllPrefabs || currentPrefab == prefab))                {
+                if (currentCollide == collide && currentPillars == pillars) {
                     return;
                 }
                 if (currentPrefab != null)
@@ -72,23 +81,9 @@ namespace NoPillars
                 currentPrefab = prefab;
                 currentPillars = pillars;
                 currentCollide = collide;
-                currentMode = mode;
                 savedMetadata = new List<NetInfoExtensions.Metadata>();
 
-                HashSet<NetInfo> prefabsToModify;
-                switch (mode)
-                {
-                    case (int)ModificationMode.AllVersions:
-                        prefabsToModify = prefab.GetAllVersions();
-                        break;
-                    case (int)ModificationMode.AllPrefabs:
-                        prefabsToModify = Util.GetAllPrefabs();
-                        break;
-                    default:
-                        prefabsToModify = new HashSet<NetInfo> { prefab };
-                        break;
-                }
-                foreach (var prefabToModify in prefabsToModify)
+                foreach (var prefabToModify in Util.GetAllPrefabs())
                 {
                     savedMetadata.Add(prefabToModify.GetMetadata());
                     prefabToModify.SetMetadata(collide, pillars);
@@ -109,7 +104,6 @@ namespace NoPillars
             currentPrefab = null;
             currentPillars = -1;
             currentCollide = -1;
-            currentMode = -1;
         }
 
         private NetInfo GetToolPrefab()

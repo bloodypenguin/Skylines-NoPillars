@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 
 namespace NoPillars
 {
@@ -15,17 +14,6 @@ namespace NoPillars
             public BuildingInfo bpi;
             public BuildingInfo bmi;
         }
-
-        public static void Initialize()
-        {
-            Reset();
-
-        }
-
-        public static void Reset()
-        {
-        }
-
 
         public static Metadata GetMetadata(this NetInfo prefab)
         {
@@ -164,32 +152,6 @@ namespace NoPillars
 
         }
 
-
-        public static HashSet<NetInfo> GetAllVersions(this NetInfo prefab)
-        {
-            HashSet<NetInfo> prefabs = new HashSet<NetInfo>();
-            var roadAi = prefab.m_netAI as RoadAI;
-            if (roadAi != null)
-            {
-                AddAllVersions(roadAi, prefabs);
-                return prefabs;
-            }
-            var trainTrackAi = prefab.m_netAI as TrainTrackAI;
-            if (trainTrackAi != null)
-            {
-                AddAllVersions(trainTrackAi, prefabs);
-                return prefabs;
-            }
-            var pedestrianPathAi = prefab.m_netAI as PedestrianPathAI;
-            if (pedestrianPathAi != null)
-            {
-                AddAllVersions(pedestrianPathAi, prefabs);
-                return prefabs;
-            }
-            prefabs.Add(prefab);
-            return prefabs;
-        }
-
         public static HashSet<BuildingInfo> GetPillars(this NetInfo prefab)
         {
             HashSet<BuildingInfo> pillars = new HashSet<BuildingInfo>();
@@ -212,26 +174,6 @@ namespace NoPillars
             }
             pillars.RemoveWhere(bi => bi == null);
             return pillars;
-        }
-
-        private static void AddAllVersions(NetAI netAi, HashSet<NetInfo> prefabs)
-        {
-            prefabs.Add(netAi.m_info);
-            AddPrefab(netAi, prefabs, "m_bridgeInfo");
-            AddPrefab(netAi, prefabs, "m_elevatedInfo");
-            AddPrefab(netAi, prefabs, "m_slopeInfo");
-            AddPrefab(netAi, prefabs, "m_tunnelInfo");
-        }
-
-        private static void AddPrefab(NetAI netAi, HashSet<NetInfo> prefabs, string fieldName)
-        {
-            var bridgeField = netAi.GetType()
-                .GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-            var value = (NetInfo)bridgeField?.GetValue(netAi);
-            if (value != null)
-            {
-                prefabs.Add(value);
-            }
         }
     }
 }
