@@ -49,8 +49,16 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="NoPillars.cs" />
+    <Compile Include="LoadingExtension.cs" />
+    <Compile Include="ModificationMode.cs" />
+    <Compile Include="NoPillarsMod.cs" />
+    <Compile Include="NetInfoExtensions.cs" />
+    <Compile Include="NoPillarsMonitor.cs" />
+    <Compile Include="Pillars.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="NoPillarsUI.cs" />
+    <Compile Include="UIUtil.cs" />
+    <Compile Include="Util.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
