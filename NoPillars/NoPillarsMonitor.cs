@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using ColossalFramework;
 using UnityEngine;
 
 namespace NoPillars
@@ -61,7 +63,9 @@ namespace NoPillars
                     return;
                 }
                 Reset();
-                if (Options.OptionsHolder.Options.resetOnHide) { 
+                currentPrefab = null;
+                if (Options.OptionsHolder.Options.resetOnHide)
+                {
                     NoPillarsUI.Reset();
                 }
                 currentAlwaysVisible = alwaysVisible;
@@ -71,13 +75,11 @@ namespace NoPillars
                 NoPillarsUI.Show();
                 var collide = NoPillarsUI.Collide;
                 var pillars = NoPillarsUI.Pillars;
-                if (currentCollide == collide && currentPillars == pillars) {
+                if (currentCollide == collide && currentPillars == pillars)
+                {
                     return;
                 }
-                if (currentPrefab != null)
-                {
-                    Reset();
-                }
+                Reset();
                 currentPrefab = prefab;
                 currentPillars = pillars;
                 currentCollide = collide;
@@ -106,15 +108,37 @@ namespace NoPillars
             currentCollide = -1;
         }
 
-        private NetInfo GetToolPrefab()
-        {
-            if (finePrefab == null)
-            {
-                var netTool = ToolsModifierControl.GetCurrentTool<NetTool>();
-                return netTool?.m_prefab;
-            }
+        private NetInfo GetToolPrefab() { 
             var tool = ToolsModifierControl.GetCurrentTool<ToolBase>();
-            if (tool != null && tool.GetType() == fineType)
+            if (tool == null)
+            {
+                return null;
+            }
+            var netTool = tool as NetTool;
+            if (netTool != null)
+            {
+                return netTool.m_prefab;
+            }
+            var buildingTool = tool as BuildingTool;
+            if (buildingTool != null)
+            {
+                BuildingInfo building;
+                if (buildingTool.m_relocate == 0)
+                {
+                    building = buildingTool.m_prefab;
+                }
+                else
+                {
+                    building = Singleton<BuildingManager>.instance.m_buildings.m_buffer[buildingTool.m_relocate].Info;
+                }
+                var paths = building?.m_paths;
+                if (paths == null || paths.Length < 1)
+                {
+                    return null;
+                }
+                return (from path in paths where path.m_netInfo != null select path.m_netInfo).FirstOrDefault();
+            }
+            if (tool.GetType() == fineType)
             {
                 return (NetInfo)finePrefab.GetValue(tool);
             }
